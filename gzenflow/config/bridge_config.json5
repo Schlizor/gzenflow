@@ -1,0 +1,21 @@
+{
+  "plugins": {
+    "ros2dds": {
+      "allow": {
+        "publishers": [
+          "/network_state"
+        ],
+        "subscribers": [],
+        "service_servers": [],
+        "service_clients": [],
+        "action_servers": [],
+        "action_clients": []
+      }
+    }
+  },
+  "connect": {
+    "endpoints": [
+      "tcp/192.168.178.70:7447"
+    ]
+  }
+}
