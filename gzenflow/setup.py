@@ -14,9 +14,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')), 
         (os.path.join('share', package_name, 'msg'), glob('msg/*.msg')), 
-
-        #('share/' + package_name + '/msg', ['msg/NetworkState.msg']),
-
+        ('share/' + package_name + '/launch', ['launch/gzenflow_launch.py']),
     ],
     install_requires=['setuptools', 'eclipse-zenoh', 'pyyaml', 'json5', 'rosidl-interface-pkgs'],
     zip_safe=True,
