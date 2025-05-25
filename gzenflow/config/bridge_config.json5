@@ -3,7 +3,7 @@
     "ros2dds": {
       "allow": {
         "publishers": [
-          "/network_state"
+          "/camera/camera/color/camera_info"
         ],
         "subscribers": [],
         "service_servers": [],

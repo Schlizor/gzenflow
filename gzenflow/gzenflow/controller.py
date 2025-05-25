@@ -7,6 +7,8 @@ from gzenflow_interfaces.msg import NetworkState
 from gzenflow.zenoh_config_builder import generate_zenoh_bridge_config
 from gzenflow.gstreamer_streamer import GStreamerStreamer
 from gzenflow.bridge_manager import BridgeManager
+from ament_index_python.packages import get_package_share_directory
+
 import yaml
 
 def classify_bandwidth(bw_mbps):
@@ -34,11 +36,14 @@ def get_bitrate_for_state(min_bitrate, max_bitrate, state):
 class FlowController(Node):
     def __init__(self):
         super().__init__('bridge_controller')
-        self.config_dir = Path("/home/thomas/workspaces/master_ws/src/gzenflow/config")
-        self.config_path = self.config_dir / "config.yaml"
-        self.output_path = self.config_dir / "bridge_config.json5"
 
-        # Initialisiere BridgeManager und GStreamerStreamer
+         # Config-Pfade aus dem gzenflow-Package-Share
+        pkg_share = get_package_share_directory('gzenflow')
+        config_dir = Path(pkg_share) / 'config'
+        self.config_path = config_dir / 'config.yaml'
+        self.output_path = config_dir / 'bridge_config.json5'
+
+# Initialisiere BridgeManager und GStreamerStreamer
         self.bridge = BridgeManager(self.get_logger(), self.config_path, self.output_path)
         self.gstreamer = GStreamerStreamer(self.config_path, self.get_logger())
 

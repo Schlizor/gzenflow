@@ -27,6 +27,7 @@ setup(
          'console_scripts': [
                 'controller = gzenflow.controller:main',            
                 'network_manager = gzenflow.network_manager:main',
+                'ros2_gstreamer_streamer = gzenflow.ros2_gstreamer_streamer:main',
         ],
     },
 )

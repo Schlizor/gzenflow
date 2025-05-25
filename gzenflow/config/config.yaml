@@ -65,7 +65,7 @@ streams:
     allowed_in_state: [EXCELLENT, ALL]
   # camera_stream2:
   #   type: ros2_gstreamer
-  #   topic: /camera/camera/depth/image_raw
+  #   topic: /camera/camera/depth/image_rect_raw
   #   port: 5007
   #   min_bitrate: 800
   #   max_bitrate: 3000
