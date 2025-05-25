@@ -14,6 +14,12 @@ def generate_launch_description():
             executable='controller',
             name='bridge_controller',
             output='screen'
+        ),
+        Node(
+            package='gzenflow',
+            executable='ros2_gstreamer_streamer',
+            name='ros2_gstreamer_streamer',
+            output='screen',
         )
     ])
 
