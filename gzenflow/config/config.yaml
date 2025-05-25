@@ -1,37 +1,72 @@
+#------------------------------------------------------
+#
+# Possible States: "EXCELLENT", "GOOD", "DEGRADED", "CRITICAL", "DISABLED"
+# Possible types: "zenoh", "gstreamer", "ros_gstreamer"
+# ------------------------------------------------------
+
 global:
   target_ip: 192.168.178.70 
 
 streams:
+
+# ROS2 TOPIC TO ZENOH EXAMPLE
   color_camera_info:
     type: zenoh
     topic: /camera/camera/color/camera_info
     msg_type: sensor_msgs/CameraInfo
-    allowed_in_state: [ALL]
+    allowed_in_state: [ALL, EXCELLENT]
   network_information:
     type: zenoh
     topic: /network_state
     msg_type: sensor_msgs/CameraInfo
-    allowed_in_state: [EXCELLENT]
+    allowed_in_state: [ALL]
   depth_camera_info:
     type: zenoh
     topic: /camera/camera/depth/camera_info
     msg_type: sensor_msgs/CameraInfo
     allowed_in_state: [ALL]
-  usb_cam_video4:
+
+# VIDEO DEVICE TO GSTREAMER EXAMPLE
+  # realsense_depth:
+  #   type: gstreamer
+  #   device: /dev/video2
+  #   port: 5003
+  #   width: 640
+  #   height: 480
+  #   min_bitrate: 1000
+  #   max_bitrate: 4000
+  #   allowed_in_state: [ALL]
+  # realsense_color:
+  #   type: gstreamer
+  #   device: /dev/video4
+  #   port: 5004
+  #   width: 640
+  #   height: 480
+  #   min_bitrate: 1000
+  #   max_bitrate: 4000
+  #   allowed_in_state: [ALL]
+  logitech_webcam:
     type: gstreamer
-    device: /dev/video2
-    port: 5003
+    device: /dev/video6
+    port: 5005
     width: 640
     height: 480
     min_bitrate: 1000
     max_bitrate: 4000
-    allowed_in_state: [ALL]
-  usb_cam_video5:
-    type: gstreamer
-    device: /dev/video4
-    port: 5004
-    width: 640
-    height: 480
+    allowed_in_state: [EXCELLENT, GOOD]
+
+# ROS2 TO GSTREAMER EXAMPLE 
+  camera_stream1:
+    type: ros2_gstreamer
+    topic: /camera/camera/color/image_raw
+    port: 5006
     min_bitrate: 1000
     max_bitrate: 4000
-    allowed_in_state: [ALL]
+    allowed_in_state: [EXCELLENT, ALL]
+  # camera_stream2:
+  #   type: ros2_gstreamer
+  #   topic: /camera/camera/depth/image_raw
+  #   port: 5007
+  #   min_bitrate: 800
+  #   max_bitrate: 3000
+  #   allowed_in_state: [ALL]
