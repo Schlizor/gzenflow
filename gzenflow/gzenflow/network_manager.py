@@ -33,7 +33,7 @@ class NetworkManager(Node):
             client = iperf3.Client()
             client.server_hostname = self.target_ip
             client.port = 5201
-            client.duration = 3
+            client.duration = 2
             client.protocol = 'tcp'
 
             result = client.run()

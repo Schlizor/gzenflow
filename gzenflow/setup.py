@@ -18,7 +18,7 @@ setup(
     ],
     install_requires=['setuptools', 'eclipse-zenoh', 'pyyaml', 'json5', 'rosidl-interface-pkgs'],
     zip_safe=True,
-    maintainer='thomas',
+    maintainer='Thomas S.',
     maintainer_email='Schlichting25@gmail.com',
     description='Dynamic GStreamer and Zenoh stream control in ROS 2',
     license='Apache-2.0',
