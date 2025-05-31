@@ -21,19 +21,18 @@ class GStreamerStreamer:
         entry = self.active_pipelines.get(name)
 
         if entry:
-            self.logger.info(f"🔄 Aktualisiere Bitrate für {name}")
+            self.logger.info(f"GSTREAMER: Aktualisiere Bitrate für {name} auf Port {port} und Gerät {device}")
             self.change_bitrate(name, bitrate)
             self.resume_stream(name)
             return
 
-        # Starte neuen Stream
         stream_config = {
             "type": "gstreamer",
             "port": port,
             "device": device,
-            "min_bitrate": bitrate,  # nur für Berechnung relevant
-            "max_bitrate": bitrate,  # für Encoder
-            "allowed_in_state": ["ALL"],  # damit der Zustand keine Rolle spielt
+            "min_bitrate": bitrate,
+            "max_bitrate": bitrate,  
+            "allowed_in_state": ["ALL"], 
         }
         self._start_pipeline(name, stream_config)
 
@@ -48,14 +47,14 @@ class GStreamerStreamer:
 
             allowed = stream.get("allowed_in_state", [])
             if current_state not in allowed:
-                self.logger.info(f"⏹️  Deaktiviere Stream {name} für Zustand {current_state}")
+                self.logger.info(f"GSTREAMER: Deaktiviere Stream {name} für Zustand {current_state}")
                 continue
 
             self._start_pipeline(name, stream)
 
     def _start_pipeline(self, name, stream):
         device = stream.get("device", "/dev/video0")
-        port = stream.get("port")
+        port = stream.get("port") 
         min_br = stream.get("min_bitrate", 1000)
         max_br = stream.get("max_bitrate", 4000)
         width = stream.get("width", 640)
@@ -79,38 +78,38 @@ class GStreamerStreamer:
             "encoder": pipeline.get_by_name("encoder"),
         }
 
-        self.logger.info(f"📡 GStreamer-Stream {name} gestartet auf Port {port}")
+        self.logger.info(f"GSTREAMER: GStreamer-Stream {name} gestartet auf Port {port} und Bitratre {max_br} kbps")
 
     def change_bitrate(self, name, new_bitrate):
         entry = self.active_pipelines.get(name)
         if not entry:
-            self.logger.warning(f"⚠️ Kein Stream mit Namen {name} gefunden")
+            self.logger.warning(f"GSTREAMER: Kein Stream mit Namen {name} gefunden")
             return
 
         encoder = entry["encoder"]
         if encoder:
             encoder.set_property("bitrate", new_bitrate)
-            self.logger.info(f"🔧 Bitrate von {name} auf {new_bitrate} gesetzt")
+            self.logger.info(f"GSTREAMER: Bitrate von {name} auf {new_bitrate} gesetzt")
             entry["bitrate"] = new_bitrate
 
     def pause_stream(self, name):
         entry = self.active_pipelines.get(name)
         if entry:
             entry["pipeline"].set_state(Gst.State.PAUSED)
-            self.logger.info(f"⏸️ Pausiere Stream {name}")
+            self.logger.info(f"GSTREAMER: Pausiere Stream {name}")
 
     def resume_stream(self, name):
         entry = self.active_pipelines.get(name)
         if entry:
             entry["pipeline"].set_state(Gst.State.PLAYING)
-            self.logger.info(f"▶️ Fortsetze Stream {name}")
+            self.logger.info(f"GSTREAMER: Fortsetze Stream {name}")
 
     def stop_stream(self, name):
         entry = self.active_pipelines.pop(name, None)
         if entry:
             pipeline = entry["pipeline"]
             pipeline.set_state(Gst.State.NULL)
-            self.logger.info(f"🛑 Stoppe Stream {name}")
+            self.logger.info(f"GSTREAMER: Stoppe Stream {name}")
 
     def _stop_all(self):
         for name in list(self.active_pipelines.keys()):

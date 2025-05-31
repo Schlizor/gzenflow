@@ -3,10 +3,6 @@ import json
 from pathlib import Path
 
 def generate_zenoh_bridge_config(yaml_path, output_path, current_state="ALL"):
-    """
-    Liest die YAML-Stream-Konfiguration ein und erzeugt eine JSON5-Datei
-    für die Verwendung mit zenoh-bridge-ros2dds.
-    """
     with open(yaml_path, "r") as f:
         config = yaml.safe_load(f)
 
@@ -21,7 +17,7 @@ def generate_zenoh_bridge_config(yaml_path, output_path, current_state="ALL"):
                 topic = stream.get("topic")
                 if topic:
                     allowed_publishers.append(topic)
-    print(f"✅ Erlaubte Streams: {allowed_publishers}")
+    print(f"ZENOH_CONFIG_GENERATOR: Erlaubte Streams: {allowed_publishers}")
 
     bridge_config = {
         "plugins": {
@@ -43,7 +39,7 @@ def generate_zenoh_bridge_config(yaml_path, output_path, current_state="ALL"):
 
     with open(output_path, "w") as f:
         json.dump(bridge_config, f, indent=2)
-    print(f"✅ Zenoh Bridge-Konfiguration gespeichert unter: {output_path}")
+    print(f"ZENOH_CONFIG_GENERATOR: Zenoh Bridge-Konfiguration gespeichert unter: {output_path}")
 
 def main():
     generate_zenoh_bridge_config("config.yaml", "bridge_config.json5", current_state="GOOD")
