@@ -61,24 +61,49 @@ class BridgeManager:
                     if topic:
                         allowed_publishers.append(topic)
         self.logger.info(f"✅ Erlaubte Streams: {allowed_publishers}")
-
+       
         bridge_config = {
-            "plugins": {
-                "ros2dds": {
-                    "allow": {
-                        "publishers": allowed_publishers,
-                        "subscribers": [],
-                        "service_servers": [],
-                        "service_clients": [],
-                        "action_servers": [],
-                        "action_clients": [],
+                "plugins": {
+                    "ros2dds": {
+                        "allow": {
+                            "publishers": allowed_publishers,
+                            "subscribers": [".*"],
+                            "service_servers": [".*"],
+                            "service_clients": [".*"],
+                            "action_servers": [".*"],
+                            "action_clients": [".*"],
+                        }
+                    },
+                    "rest": {
+                        "http_port": 8000
                     }
-                }
-            },
-            "connect": {
-                "endpoints": [f"tcp/{target_ip}:7447"]
+                },
+                "connect": {
+                    "endpoints": [f"tcp/{target_ip}:7447"]
+                },
+                "scouting": {
+                    "multicast": {
+                        "enabled": True,
+                        "address": "224.0.0.224:7446",
+                        "interface": "auto",
+                        "autoconnect": {
+                            "router": [],
+                            "peer": ["router", "peer"]
+                        },
+                        "listen": True
+                    },
+                    "gossip": {
+                        "enabled": True,
+                        "multihop": False,
+                        "autoconnect": {
+                            "router": [],
+                            "peer": ["router", "peer"]
+                        }
+                    }
+                },
             }
-        }
+
+
 
         with open(self.output_path, "w") as f:
             json.dump(bridge_config, f, indent=2)

@@ -1,0 +1,23 @@
+{
+  plugins: {
+    ros2dds: {
+      allow: {
+        publishers: [".*/laser_scan", "/tf", ".*/pose"],
+        subscribers: [".*"],
+        service_servers: [".*"],
+        service_clients: [".*"],
+        action_servers: [".*"],
+        action_clients: [".*"],
+      },
+    },
+    rest: {
+      http_port: 8000,
+    },
+  },
+
+  connect: {
+    endpoints: [
+      "tcp/192.168.178.70:7447"
+    ]
+  },
+}

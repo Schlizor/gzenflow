@@ -20,21 +20,27 @@ def generate_zenoh_bridge_config(yaml_path, output_path, current_state="ALL"):
     print(f"ZENOH_CONFIG_GENERATOR: Erlaubte Streams: {allowed_publishers}")
 
     bridge_config = {
-        "plugins": {
-            "ros2dds": {
-                "allow": {
-                    "publishers": allowed_publishers,
-                    "subscribers": [],
-                    "service_servers": [],
-                    "service_clients": [],
-                    "action_servers": [],
-                    "action_clients": [],
-                }
-            }
+      plugins: {
+        ros2dds: {
+          allow: {
+            publishers: allowed_publishers,
+            subscribers: [".*"],
+            service_servers: [".*"],
+            service_clients: [".*"],
+            action_servers: [".*"],
+            action_clients: [".*"],
+          },
         },
-        "connect": {
-            "endpoints": [f"tcp/{target_ip}:7447"]
-        }
+        rest: {
+          http_port: 8000,
+        },
+      },
+
+      connect: {
+        endpoints: [
+          "tcp/192.168.178.70:7447"
+        ]
+      },
     }
 
     with open(output_path, "w") as f:
