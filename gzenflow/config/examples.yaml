@@ -20,6 +20,7 @@ streams:
   # TYPE ZENOH EXAMPLE
   color_camera_info: # This name must be unique
     type: zenoh
+    frequency: 10 # OPTIONAL: You can limit the frequency of the msgs -> DEFAULT = No limitation
     topic: /camera/camera/color/camera_info
     allowed_in_state: [ALL, EXCELLENT]
 

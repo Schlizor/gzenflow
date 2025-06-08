@@ -11,6 +11,7 @@ streams:
   color_camera_info:
     type: zenoh
     topic: /camera/camera/color/camera_info
+    frequency: 5
     msg_type: sensor_msgs/CameraInfo
     allowed_in_state: [ALL, EXCELLENT]
   network_information:
