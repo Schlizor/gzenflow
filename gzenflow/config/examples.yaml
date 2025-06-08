@@ -1,0 +1,59 @@
+#-----------------------------------------------------------------------------------------------------------------------------
+#
+# Possible States: "EXCELLENT", "GOOD", "DEGRADED", "CRITICAL", "DISABLED"
+#
+# Possible types: "zenoh", "gstreamer", "thermal", "ros_gstreamer"
+#
+# - Type zenoh allows the given topic to publish so it is available at the other end
+# - Type gstreamer starts an gstreamer pipeline if the state allows it. 
+# - Type thermal starts an gstreamer pipeline using the openseekthermal plugin (https://github.com/StefanFabian/openseekthermal)
+#       - Be sure that the openseek-plugin is actually installed correctly and working!
+# - Type ros_gstreamer converts an given ros topic to an gstreamer using cvbridge for conversion 
+#
+# ------------------------------------------------------------------------------------------------------------------------------
+
+global:
+  target_ip: 192.168.178.123 #Target Pc where you want to send data to
+
+streams:
+
+  # TYPE ZENOH EXAMPLE
+  color_camera_info: # This name must be unique
+    type: zenoh
+    topic: /camera/camera/color/camera_info
+    allowed_in_state: [ALL, EXCELLENT]
+
+  # TYPE GSTREAMER EXAMPLE
+  logitech_webcam:
+    type: gstreamer
+    device: /dev/video6
+    port: 5005
+    width: 640
+    height: 480
+    min_bitrate: 1000
+    max_bitrate: 4000
+    allowed_in_state: [EXCELLENT, GOOD]
+
+  # TYPE ROS2_GSTRAMER EXAMPLE
+  camera_stream1:
+    type: ros2_gstreamer
+    topic: /camera/camera/color/image_raw
+    port: 5006
+    min_bitrate: 1000
+    max_bitrate: 4000
+    allowed_in_state: [EXCELLENT, ALL]
+
+  streams:
+    thermal_cam:
+      type: thermal
+      port: 5008 # Port where gstreamer sends the video to
+      width: 320
+      height: 240
+      normalize: true #OPTIONAL: (true|false) Normalize the frame values to use the full contrast range -> DEFAULT = true
+      normalize-frame-count: 33 #OPTIONAL: (int) How many frames to use for normalization -> DEFAULT = 32
+      skip-invalid-frames: true #OPTIONAL: (true|false) If true, send only valid frames, if false, send all, which includes calibration frames where the shutter is closed and opens. -> DEFAULT = true
+      serial: 123456789 # OPTIONAL: This is the Serial number of the device (Only necessary if there a are multiple OpenSeek devices) -> DEFAULT = empty
+      min_bitrate: 1000
+      max_bitrate: 4000
+      allowed_in_state: [ALL, EXCELLENT]
+

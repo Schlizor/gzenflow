@@ -1,4 +1,3 @@
-# controller.py
 import rclpy
 from rclpy.node import Node
 from pathlib import Path
@@ -51,31 +50,59 @@ class FlowController(Node):
             self.network_callback,
             10
         )
-        self.bridge.start_bridge()
-
+        #self.bridge.start_bridge()
+        self.bridge.generate_and_start_bridge("EXCELLENT")
+        
     def network_callback(self, msg: NetworkState):
         if msg.state != "OK":
-            self.get_logger().warn("WARNUNG: Netzwerkzustand nicht OK oder unbekannt! Verwende DEGRADED Zustand")
+            self.get_logger().warn("WARNUNG: Netzwerkzustand nicht OK oder unbekannt! Verwende DISABLED Zustand")
             current_state = "DISABLED"
         else:
             current_state = classify_bandwidth(msg.bandwidth_mbps)
 
         self.get_logger().info(f"🔄 Netzwerkzustand: {current_state} ({msg.bandwidth_mbps:.2f} Mbit/s)")
 
-        self.bridge.generate_and_restart_bridge(current_state)
-        
+        #self.bridge.generate_and_restart_bridge(current_state)
+
         with open(self.config_path, 'r') as f:
             config = yaml.safe_load(f)
 
         for name, stream in config.get('streams', {}).items():
-            if stream.get('type') != 'gstreamer':
+            stype = stream.get('type')
+            # Unterstütze sowohl normale GStreamer- als auch Thermal-Streams
+            if stype not in ('gstreamer', 'thermal'):
                 continue
+
             allowed = stream.get('allowed_in_state', [])
-            if "ALL" in allowed or current_state in allowed:
-                bitrate = get_bitrate_for_state(stream['min_bitrate'], stream['max_bitrate'], current_state)
-                self.gstreamer.start_or_update_stream(name, stream['port'], stream['device'], bitrate)
-            else:
+            if "ALL" not in allowed and current_state not in allowed:
+                # Stream nicht erlaubt, stoppe ihn
                 self.gstreamer.stop_stream(name)
+                continue
+
+            min_br = stream.get('min_bitrate', 1000)
+            max_br = stream.get('max_bitrate', 4000)
+            bitrate = get_bitrate_for_state(min_br, max_br, current_state)
+
+            device = stream.get('device', '/dev/video0')
+            port = stream.get('port')
+
+            if stype == 'gstreamer':
+                self.gstreamer.start_or_update_stream(
+                    name, port, device, bitrate,
+                    stream_type='gstreamer'
+                )
+            else:
+                thermal_kwargs = {
+                    'normalize': stream.get('normalize', True),
+                    'normalize-frame-count': stream.get('normalize-frame-count', 32),
+                    'skip-invalid-frames': stream.get('skip-invalid-frames', True),
+                    'serial': stream.get('serial', '')
+                }
+                self.gstreamer.start_or_update_stream(
+                    name, port, device, bitrate,
+                    stream_type='thermal',
+                    **thermal_kwargs
+                )
 
 def main(args=None):
     rclpy.init(args=args)
@@ -86,3 +113,6 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
+
+

@@ -8,8 +8,6 @@ global:
   target_ip: 192.168.178.123 
 
 streams:
-
-# ROS2 TOPIC TO ZENOH EXAMPLE
   color_camera_info:
     type: zenoh
     topic: /camera/camera/color/camera_info
@@ -25,26 +23,6 @@ streams:
     topic: /camera/camera/depth/camera_info
     msg_type: sensor_msgs/CameraInfo
     allowed_in_state: [ALL]
-
-# VIDEO DEVICE TO GSTREAMER EXAMPLE
-  # realsense_depth:
-  #   type: gstreamer
-  #   device: /dev/video2
-  #   port: 5003
-  #   width: 640
-  #   height: 480
-  #   min_bitrate: 1000
-  #   max_bitrate: 4000
-  #   allowed_in_state: [ALL]
-  # realsense_color:
-  #   type: gstreamer
-  #   device: /dev/video4
-  #   port: 5004
-  #   width: 640
-  #   height: 480
-  #   min_bitrate: 1000
-  #   max_bitrate: 4000
-  #   allowed_in_state: [ALL]
   logitech_webcam:
     type: gstreamer
     device: /dev/video6
@@ -54,19 +32,22 @@ streams:
     min_bitrate: 1000
     max_bitrate: 4000
     allowed_in_state: [EXCELLENT, GOOD]
-
-# ROS2 TO GSTREAMER EXAMPLE 
   camera_stream1:
     type: ros2_gstreamer
     topic: /camera/camera/color/image_raw
     port: 5006
     min_bitrate: 1000
     max_bitrate: 4000
-    allowed_in_state: [EXCELLENT, ALL]
-  # camera_stream2:
-  #   type: ros2_gstreamer
-  #   topic: /camera/camera/depth/image_rect_raw
-  #   port: 5007
-  #   min_bitrate: 800
-  #   max_bitrate: 3000
-  #   allowed_in_state: [ALL]
+    allowed_in_state: [EXCELLENT, ALL]  
+  thermal_cam:
+    type: thermal
+    port: 5008 # Port where gstreamer sends the video to
+    width: 320
+    height: 240
+    normalize: true #OPTIONAL: (true|false) Normalize the frame values to use the full contrast range -> DEFAULT = true
+    normalize-frame-count: 33 #OPTIONAL: (int) How many frames to use for normalization -> DEFAULT = 32
+    skip-invalid-frames: true #OPTIONAL: (true|false) If true, send only valid frames, if false, send all, which includes calibration frames where the shutter is closed and opens. -> DEFAULT = true
+    min_bitrate: 1000
+    max_bitrate: 4000
+    allowed_in_state: [ALL, EXCELLENT]
+
