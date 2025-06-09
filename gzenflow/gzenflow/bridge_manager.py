@@ -66,6 +66,7 @@ class BridgeManager:
             self.logger.info(f"ZENOH BRIDGE: Applying pub_max_frequencies: {pub_freqs}")
 
         bridge_config = {
+            "mode": "peer",
             "plugins": {
                 "ros2dds": {
                     "allow": {
@@ -79,22 +80,22 @@ class BridgeManager:
                 },
                 "rest": { "http_port": 8000 }
             },
-            "connect": { "endpoints": [f"tcp/{target_ip}:7447"] },
+            #"connect": { "endpoints": [f"tcp/{target_ip}:7447"] },
             "scouting": {
                 "multicast": {
                     "enabled": True,
-                    "address": "224.0.0.224:7446",
                     "interface": "auto",
                     "autoconnect": { "router": [], "peer": ["router", "peer"] },
                     "listen": True
                 },
                 "gossip": {
                     "enabled": True,
-                    "multihop": False,
+                    "multihop": True,
                     "autoconnect": { "router": [], "peer": ["router", "peer"] }
                 }
             }
         }
+
 
         if pub_freqs:
             bridge_config["plugins"]["ros2dds"]["pub_max_frequencies"] = pub_freqs
