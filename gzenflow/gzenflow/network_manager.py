@@ -1,4 +1,3 @@
-# network_manager.py
 import rclpy
 from rclpy.node import Node
 from gzenflow_interfaces.msg import NetworkState
@@ -13,41 +12,66 @@ class NetworkManager(Node):
         super().__init__('network_manager')
         self.publisher_ = self.create_publisher(NetworkState, 'network_state', 10)
         self.declare_parameter('config_path', '/home/thomas/workspaces/master_ws/src/gzenflow/config/config.yaml')
-
         config_path = Path(self.get_parameter('config_path').value)
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
         self.target_ip = config.get('global', {}).get('target_ip', '127.0.0.1')
+        self.get_logger().info(f"NETWORKMANAGER: Starte mit Ziel-IP: {self.target_ip}")
+        self.measure_network_quality()
+        self.timer = self.create_timer(15.0, self.measure_network_quality)
 
-        self.get_logger().info(f"NETWORKMANAGER: Starte NetworkManager mit Ziel-IP: {self.target_ip}") 
-        self.measure_bandwidth()
-        self.timer = self.create_timer(20.0, self.measure_bandwidth)
-
-    def measure_bandwidth(self):
-        self.get_logger().info("NETWORKMANAGER: Messe Netzwerkbandbreite...")
+    def measure_network_quality(self):
+        self.get_logger().info("NETWORKMANAGER: Messe Netzwerkqualität...")
         msg = NetworkState()
-
         try:
-            client = iperf3.Client()
-            client.server_hostname = self.target_ip
-            client.port = 5201
-            client.duration = 2
-            client.protocol = 'tcp'
-
-            result = client.run()
+            tcp_client = iperf3.Client()
+            tcp_client.server_hostname = self.target_ip
+            tcp_client.port = 5201
+            tcp_client.duration = 2
+            tcp_client.protocol = 'tcp'
+            result = tcp_client.run()
             if result.error:
                 raise RuntimeError(result.error)
             msg.state = "OK"
-            msg.bandwidth_mbps = result.sent_Mbps
-            self.get_logger().info(f"NETWORKMANAGER:iperf3-Bandbreite: {msg.bandwidth_mbps:.2f} Mbit/s")
-
+            msg.bandwidth_mbps = round(result.sent_Mbps, 2)
+            self.get_logger().info(f"TCP-Bandbreite: {msg.bandwidth_mbps:.2f} Mbit/s")
         except Exception as e:
-            self.get_logger().warn(f"NETWORKMANAGER: iperf3 fehlgeschlagen: {e}")
-            self.get_logger().info("NETWORKMANAGER: Verwende Fallback!")
+            self.get_logger().warn(f"TCP-Messung fehlgeschlagen: {e}")
             msg.state = "FALLBACK"
-            msg.bandwidth_mbps = self.estimate_bandwidth_locally()
-            self.get_logger().info(f"NETWORK MANAGER: Geschätzte Bandbreite (Fallback): {msg.bandwidth_mbps:.2f} Mbit/s")
+            msg.bandwidth_mbps = round(self.estimate_bandwidth_locally(), 2)
+        msg.jitter_ms = 0.0
+        msg.packet_loss_pct = 0.0
 
+        time.sleep(0.5)
+
+        if self.target_ip != "127.0.0.1" and msg.bandwidth_mbps > 10.0:
+            try:
+                udp_client = iperf3.Client()
+                udp_client.server_hostname = self.target_ip
+                udp_client.port = 5201
+                udp_client.duration = 2
+                udp_client.protocol = 'udp'
+                udp_client.bandwidth = 1_000_000
+                udp_client.blksize = 1400
+                result = udp_client.run()
+                if result.error:
+                    raise RuntimeError(result.error)
+                if result.lost_percent is not None:
+                    msg.packet_loss_pct = float(round(result.lost_percent, 2))
+                else:
+                    msg.packet_loss_pct = 0.0
+
+                if result.jitter_ms is not None:
+                    msg.jitter_ms = float(round(result.jitter_ms, 2))
+                else:
+                    msg.jitter_ms = 0.0
+
+                self.get_logger().info(f"UDP: Jitter: {msg.jitter_ms:.2f} ms, Packet Loss: {msg.packet_loss_pct:.2f}%")
+                del udp_client
+            except Exception as e:
+                self.get_logger().warn(f"UDP-Messung fehlgeschlagen: {e}")
+        else:
+            self.get_logger().info("UDP-Messung übersprungen")
         self.publisher_.publish(msg)
 
     def estimate_bandwidth_locally(self, duration=3):
@@ -58,6 +82,7 @@ class NetworkManager(Node):
         bytes_recv = net2.bytes_recv - net1.bytes_recv
         total_bytes = bytes_sent + bytes_recv
         mbps = (total_bytes * 8 / 1_000_000) / duration
+        self.get_logger().info(f"Lokale Schätzung: {mbps:.2f} Mbit/s")
         return mbps
 
 def main(args=None):
