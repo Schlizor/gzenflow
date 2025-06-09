@@ -2,7 +2,7 @@
 
 > ⚠️ **This package is still under development and not feature-complete.**
 >
-> * Runtime subscription changes via Zenoh are currently not supported.
+> * Zenoh Config changes in runtime not possible at the momen -> needed feature.
 > * API and functionality may change without notice.
 
 **Dynamic GStreamer & Zenoh Stream Control in ROS 2**
