@@ -22,7 +22,7 @@ class BridgeManager:
             self.generate_zenoh_config(current_state)
             self.restart_bridge()
             self.last_state = current_state
-        else :
+        else:
             self.logger.info(f"ZENOH BRIDGE: Zenoh-Bridge-Konfiguration bleibt unverändert für Zustand: {current_state}")
 
     def start_bridge(self):
@@ -50,6 +50,8 @@ class BridgeManager:
         streams = config.get("streams", {})
 
         allowed_publishers = []
+        
+        priorities = []
         pub_freqs = []
         for name, stream in streams.items():
             if stream.get("type") == "zenoh":
@@ -61,14 +63,28 @@ class BridgeManager:
                         freq = stream.get("frequency")
                         if isinstance(freq, (int, float)):
                             pub_freqs.append(f"{topic}={freq}")
+                        prio = stream.get("priority")
+                        express = stream.get("express", False)
+
+                        if isinstance(prio, int) and 1 <= prio <= 7:
+                            priority_str = f"{prio}:express" if express else f"{prio}"
+                            priorities.append(f"{topic}={priority_str}")
+                        elif prio is not None:
+                            self.logger.warning(f"ZENOH BRIDGE: Invalid priority {prio} for topic {topic}. Must be 1–7.")
+            
         self.logger.info(f"Allowed Zenoh publishers: {allowed_publishers}")
         if pub_freqs:
             self.logger.info(f"ZENOH BRIDGE: Applying pub_max_frequencies: {pub_freqs}")
+        if priorities:
+            self.logger.info(f"ZENOH BRIDGE: Applying priorities: {priorities}")    
+
+        ros_domain = config.get("global", {}).get("ros_domain", 0)
 
         bridge_config = {
             "mode": "peer",
             "plugins": {
                 "ros2dds": {
+                    "domain": ros_domain,
                     "allow": {
                         "publishers": allowed_publishers,
                         "subscribers": [".*"],
@@ -78,9 +94,7 @@ class BridgeManager:
                         "action_clients": [".*"],
                     },
                 },
-                "rest": { "http_port": 8000 }
             },
-            #"connect": { "endpoints": [f"tcp/{target_ip}:7447"] },
             "scouting": {
                 "multicast": {
                     "enabled": True,
@@ -96,9 +110,11 @@ class BridgeManager:
             }
         }
 
-
         if pub_freqs:
             bridge_config["plugins"]["ros2dds"]["pub_max_frequencies"] = pub_freqs
+
+        if priorities:
+            bridge_config["plugins"]["ros2dds"]["pub_priorities"] = priorities
 
         with open(self.output_path, "w") as f:
             json.dump(bridge_config, f, indent=2)

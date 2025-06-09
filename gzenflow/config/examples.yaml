@@ -10,20 +10,24 @@
 #       - Be sure that the openseek-plugin is actually installed correctly and working!
 # - Type ros_gstreamer converts an given ros topic to an gstreamer using cvbridge for conversion 
 #
+# This config has to be named "config.yaml" otherwise gzenflow will not recognize it
 # ------------------------------------------------------------------------------------------------------------------------------
 
 global:
   target_ip: 192.168.178.123 #Target Pc where you want to send data to
+  ros_domain: 0 # OPTIONAL: If you want to set a ros domain for zenoh -> DEFAULT = 0
 
 streams:
-
   # TYPE ZENOH EXAMPLE
-  color_camera_info: # This name must be unique
+  color_camera_info: #This name must be unique
     type: zenoh
-    frequency: 10 # OPTIONAL: You can limit the frequency of the msgs -> DEFAULT = No limitation
     topic: /camera/camera/color/camera_info
+    frequency: 5 # OPTIONAL: You can limit the frequency of the msgs -> DEFAULT = No limitation
+    priority: 1 # OPTIONAL: (Values 1-7) Sets the zenoh internal priority of the topic (For Details check Zenoh Documentation)
+    express: true # OPTIONAL: (true|false) If you want to use Zenoh Express policy set this policy to true. (Be Careful with this, check Zenoh Documentation=
+    msg_type: sensor_msgs/CameraInfo
     allowed_in_state: [ALL, EXCELLENT]
-
+    
   # TYPE GSTREAMER EXAMPLE
   logitech_webcam:
     type: gstreamer

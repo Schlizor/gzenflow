@@ -6,17 +6,21 @@
 
 global:
   target_ip: 192.168.178.123 
+  ros_domain: 0
 
 streams:
   color_camera_info:
     type: zenoh
     topic: /camera/camera/color/camera_info
     frequency: 5
+    priority: 1
+    express: true
     msg_type: sensor_msgs/CameraInfo
     allowed_in_state: [ALL, EXCELLENT]
   network_information:
     type: zenoh
     topic: /network_state
+    priority: 4
     msg_type: sensor_msgs/CameraInfo
     allowed_in_state: [ALL]
   depth_camera_info:
