@@ -145,6 +145,28 @@ Alternatively, start components manually:
 
 ---
 
+## Gscam2
+
+Here is an example if you want to use gscam2 for a not thermal camera on the other pc: 
+
+```bash
+ros2 run gscam gscam_node \
+  --ros-args \
+  -p gscam_config:="udpsrc port=5005 caps=\"application/x-rtp, media=video, encoding-name=H264, payload=96\" ! \
+                    rtph264depay ! avdec_h264 ! videoconvert ! video/x-raw,format=RGB" \
+  -p image_encoding:=rgb8 \
+  -p frame_id:=camera_frame \
+  -p camera_name:=udp_cam \
+  -p camera_info_url:=file:///home/thomas/.ros/camera_info/udp_cam.yaml \
+  -p use_gst_timestamps:=true \
+  -p preroll:=false \
+  -p sync_sink:=false \
+  -p use_intra_process:=false \
+  -r /camera/image_raw:=/udp_cam/image_raw \
+  -r /camera/camera_info:=/udp_cam/camera_info
+
+```
+
 ## 🛠 Troubleshooting
 
 * **Plugin not found** (`openseekthermalsrc`): Verify installation of the openseekthermal plugin; see [https://github.com/StefanFabian/openseekthermal](https://github.com/StefanFabian/openseekthermal)
